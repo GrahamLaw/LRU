@@ -16,5 +16,18 @@ namespace LRU.Tests
         {
             Assert.Fail();
         }
+
+        [TestMethod()]
+        public void LRUCacheAddTest()
+        {
+            Assert.Fail();
+        }
+
+
+        [TestMethod()]
+        public void LRUCacheRemoveTest()
+        {
+            Assert.Fail();
+        }
     }
 }
