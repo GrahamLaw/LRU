@@ -142,6 +142,7 @@ namespace LRU.Tests
             cache.AddToCache(4, 444);
 
             cache.UpdateThreshold(1);
+            Assert.IsTrue(cache.CacheLength() == 1);           
 
             // item 1 should have been removed due to resize
             var result = cache.GetFromCache(1);           

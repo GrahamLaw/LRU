@@ -51,6 +51,14 @@ namespace LRU
 
             Console.WriteLine("Cache count " + cache.CacheLength());
 
+            cache.UpdateThreshold(5);
+
+            result = cache.GetFromCache(3);
+            Console.WriteLine("Returned " + result);
+
+            Console.WriteLine("Cache count " + cache.CacheLength());
+
+
         }
     }
 }
