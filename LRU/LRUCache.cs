@@ -10,8 +10,8 @@ namespace LRU
     {
         private readonly int _defaultCapcity = 10;
         private int _capacity;
-        private Dictionary<int, LinkedListNode<KeyValuePair<int, int>>> _dic;
-        private LinkedList<KeyValuePair<int, int>> _cache = new LinkedList<KeyValuePair<int, int>>();
+        private Dictionary<int, LinkedListNode<KeyValuePair<int, object>>> _dic;
+        private LinkedList<KeyValuePair<int, object>> _cache = new LinkedList<KeyValuePair<int, object>>();
 
         //public LRUCache(int capacity)
         //{
@@ -23,8 +23,8 @@ namespace LRU
         private LRUCache()
         {
             _capacity = _defaultCapcity;
-            _dic = new Dictionary<int, LinkedListNode<KeyValuePair<int, int>>>();
-            _cache = new LinkedList<KeyValuePair<int, int>>();
+            _dic = new Dictionary<int, LinkedListNode<KeyValuePair<int, object>>>();
+            _cache = new LinkedList<KeyValuePair<int, object>>();
         }
 
         private static readonly object _lock = new object();
@@ -48,62 +48,75 @@ namespace LRU
             }
         }
 
+        /// <summary>
+        /// Returns bool indicating if an item was removed from the cache       
+        /// </summary>
+        public bool AddToCache(int key, int value) {
 
-        public void AddToCache(int key, int value) {
-
+            bool removed = false;
             // If value exists then make it he most recently access item
             if (_dic.ContainsKey(key))
             {
                 // look up the node from the dic
                 var node = _dic[key];
-
-                DisplayCache();
+                
                 // Make the node the most recently accessed and update dic
                 _cache.Remove(node);
                 _cache.AddFirst(node);                
-                // _dic[key] = _cache.AddFirst(new KeyValuePair<int, int>(key, value));
-
-                DisplayCache();
             }
             else 
             {
-                // check if the cache is at capacity
-                if (_cache.Count >= _capacity)
-                {
-                    // need to remove least used node to make room 
-                    var xxx = _cache.Last();
-                    _dic.Remove(_cache.Last().Key);
-                    _cache.RemoveLast();
-                }
-
+                removed = ResizeCache();
                 // Add to cache and dic
-                _dic.Add(key, _cache.AddFirst(new KeyValuePair<int, int>(key, value)));
+                _dic.Add(key, _cache.AddFirst(new KeyValuePair<int, object>(key, value)));
             }
+
+            return removed;
         }
 
-        public int GetFromCache(int key)
+        private bool ResizeCache()
         {
-            DisplayDictionary();
+            bool removed = false;
+            // check if the cache is at capacity
+            while (_cache.Count >= _capacity)
+            {
+                // need to remove least used node to make room 
+                // var xxx = _cache.Last();
+                _dic.Remove(_cache.Last().Key);
+                _cache.RemoveLast();
+                removed = true;
+            }
+
+            return removed;
+        }
+
+        public object GetFromCache(int key)
+        {            
             // check in the value required exists in the cache
             if (!_dic.ContainsKey(key))
-                return -1;
+                return null;
 
             // look up the node from the dic
             var node = _dic[key];
-
-            DisplayCache();
+            
             // Make the node the most recently accessed
-            _cache.Remove(node);
-            DisplayCache();
+            _cache.Remove(node);            
             _cache.AddFirst(node);
-
-            DisplayCache();
-
-           //  _dic[key] = _cache.AddFirst(node.Value); 
-            DisplayDictionary();
-
+            
             return node.Value.Value;
         }
+
+        public void ClearCache()
+        {         
+            while (_cache.Count > 0)
+            {
+                // need to remove least used node to make room 
+                var xxx = _cache.Last();
+                _dic.Remove(_cache.Last().Key);
+                _cache.RemoveLast();               
+            }            
+        }
+
 
 
         public int CacheLength()
@@ -113,7 +126,11 @@ namespace LRU
 
         public void UpdateThreshold(int cacheSize)
         {
-            _capacity = cacheSize;
+            if (cacheSize > 0)
+            {
+                _capacity = cacheSize;
+                ResizeCache();
+            }
         }
 
         public int CurrentThreshold()
@@ -121,7 +138,9 @@ namespace LRU
             return _capacity;
         }
 
-        public void DisplayCache()
+        // ******************
+        // used for debug only 
+        private void DisplayCache()
         {
             if (_cache.Count != 0)
             {
@@ -136,7 +155,9 @@ namespace LRU
             }
         }
 
-        public void DisplayDictionary()
+        // ******************
+        // used for debug only 
+        private void DisplayDictionary()
         {
             if (_dic.Count != 0)
             {
