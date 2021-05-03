@@ -65,8 +65,14 @@ namespace LRU
                 _cache.AddFirst(node);                
             }
             else 
-            {
-                removed = ResizeCache();
+            {               
+                if (_cache.Count >= _capacity)
+                {
+                    // need to remove least used node to make room 
+                    _dic.Remove(_cache.Last().Key);
+                    _cache.RemoveLast();
+                    removed = true;
+                }
                 // Add to cache and dic
                 _dic.Add(key, _cache.AddFirst(new KeyValuePair<int, object>(key, value)));
             }
@@ -74,20 +80,15 @@ namespace LRU
             return removed;
         }
 
-        private bool ResizeCache()
-        {
-            bool removed = false;
+        private void ResizeCache(int size)
+        {            
             // check if the cache is at capacity
-            while (_cache.Count >= _capacity)
+            while (_cache.Count > size)
             {
                 // need to remove least used node to make room 
-                // var xxx = _cache.Last();
                 _dic.Remove(_cache.Last().Key);
-                _cache.RemoveLast();
-                removed = true;
-            }
-
-            return removed;
+                _cache.RemoveLast();         
+            }         
         }
 
         public object GetFromCache(int key)
@@ -107,14 +108,15 @@ namespace LRU
         }
 
         public void ClearCache()
-        {         
-            while (_cache.Count > 0)
-            {
-                // need to remove least used node to make room 
-                var xxx = _cache.Last();
-                _dic.Remove(_cache.Last().Key);
-                _cache.RemoveLast();               
-            }            
+        {
+            ResizeCache(0);
+            //while (_cache.Count > 0)
+            //{
+            //    // need to remove least used node to make room 
+            //    var xxx = _cache.Last();
+            //    _dic.Remove(_cache.Last().Key);
+            //    _cache.RemoveLast();               
+            //}            
         }
 
 
@@ -129,7 +131,13 @@ namespace LRU
             if (cacheSize > 0)
             {
                 _capacity = cacheSize;
-                ResizeCache();
+                ResizeCache(cacheSize);
+                //while (_cache.Count > _capacity)
+                //{
+                //    // need to remove least used node to make room                     
+                //    _dic.Remove(_cache.Last().Key);
+                //    _cache.RemoveLast();                    
+                //}
             }
         }
 
